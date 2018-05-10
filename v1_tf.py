@@ -8,9 +8,8 @@ import pandas as pd
 import seaborn as sb
 import importdata as i
 import cfl
-import warnings
 
-#img.shape = (Z, X, Y, T)
+# img.shape = (Z, X, Y, T)
 
 def plot_time(data, Z, maxT):
 	plt.figure()
@@ -31,5 +30,5 @@ def plot_slice(data, time):
 maxX,maxY,maxT = i.init()
 train_data,val_data,test_data = i.create_dicts()
 img = i.fetch(train_data[0],maxX,maxY,maxT)
-# plot_time(img, 30, maxT)
-# plot_slice(img, 0)
+plot_time(img, 30, maxT)
+plot_slice(img, 0)
