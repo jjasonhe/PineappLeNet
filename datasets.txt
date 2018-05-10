@@ -98,6 +98,3 @@
 05Feb16_Ex18196_Ser8
 05Jan15_Ex14391_Ser7
 05Jan16_Ex17914_Ser7
-Icon
-__pycache__
-cfl.py
