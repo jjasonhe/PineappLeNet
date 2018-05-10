@@ -6,12 +6,12 @@ from operator import itemgetter
 
 folders = [
 "01Apr16_Ex18785_Ser6",
-# "01Aug16_Ex19670_Ser2",
-# "01Dec15_Ex17585_Ser9",
-# "01Dec16_Ex20906_Ser15",
-# "01Dec16_Ex4177_Ser13",
-# "01Feb16_Ex18149_Ser7",
-# "01Feb16_Ex2749_Ser10",
+"01Aug16_Ex19670_Ser2",
+"01Dec15_Ex17585_Ser9",
+"01Dec16_Ex20906_Ser15",
+"01Dec16_Ex4177_Ser13",
+"01Feb16_Ex18149_Ser7",
+"01Feb16_Ex2749_Ser10",
 # "01Jul16_Ex19381_Ser14",
 # "01Jun15_Ex15796_Ser8",
 # "01Jun15_Ex15797_Ser8",
@@ -107,7 +107,39 @@ folders = [
 # "05Jan16_Ex17914_Ser7"
 ]
 
-def i():
+# def i():
+# 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
+# 		txt = open("shapes.txt", "w")
+# 		for f in folders:
+# 			img = cfl.read('datasets/%s/im_dce' % f)
+# 			img = np.squeeze(img)
+# 			txt.write("%s," % (img.shape,))
+# 		txt.close()
+# 	txt = open("shapes.txt", "r")
+# 	shp = txt.read()
+# 	txt.close()
+# 	shp = list(ast.literal_eval(shp))
+# 	#print(shp)
+# 	maxX = max(shp, key=itemgetter(4))[4]
+# 	maxY = max(shp, key=itemgetter(3))[3]
+# 	maxT = max(shp, key=itemgetter(0))[0]
+
+# 	data = np.array([]).reshape(0, maxX, maxY, maxT)
+
+# 	for f in folders:
+# 		img = cfl.read('datasets/%s/im_dce' % f)
+# 		img = np.squeeze(img)
+# 		if img.shape[4] < maxX:
+# 			img = np.pad(img, ((0,),(0,),(0,),(0,),((maxX-img.shape[4])//2,)), mode='constant')
+# 		if img.shape[3] < maxY:
+# 			img = np.pad(img, ((0,),(0,),(0,),((maxY-img.shape[3])//2,),(0,)), mode='constant')
+# 		img = img[:,0,:,:,:]
+# 		img = np.transpose(img, (1, 3, 2, 0))
+# 		img = img[:,::-1,::-1,:]
+# 		data = np.vstack([data, img])
+# 	return data
+
+def init():
 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
 		txt = open("shapes.txt", "w")
 		for f in folders:
@@ -123,24 +155,38 @@ def i():
 	maxX = max(shp, key=itemgetter(4))[4]
 	maxY = max(shp, key=itemgetter(3))[3]
 	maxT = max(shp, key=itemgetter(0))[0]
+	return maxX,maxY,maxT
 
-	data = np.array([]).reshape(0, maxX, maxY, maxT)
+def create_dicts():
+	train_dict = list(folders[0:2])
+	val_dict = list(folders[2:5])
+	test_dict = list(folders[5:7])
+	return train_dict,val_dict,test_dict
 
-	for f in folders:
-		img = cfl.read('datasets/%s/im_dce' % f)
-		img = np.squeeze(img)
-		if img.shape[4] < maxX:
-			img = np.pad(img, ((0,),(0,),(0,),(0,),((maxX-img.shape[4])//2,)), mode='constant')
-		if img.shape[3] < maxY:
-			img = np.pad(img, ((0,),(0,),(0,),((maxY-img.shape[3])//2,),(0,)), mode='constant')
-		img = img[:,0,:,:,:]
-		img = np.transpose(img, (1, 3, 2, 0))
-		img = img[:,::-1,::-1,:]
-		data = np.vstack([data, img])
-	return data
+def fetch(f, maxX, maxY, maxT):
+	img = cfl.read('datasets/%s/im_dce' % f)
+	img = np.squeeze(img)
+	if img.shape[4] < maxX:
+		img = np.pad(img, ((0,),(0,),(0,),(0,),((maxX-img.shape[4])//2,)), mode='constant')
+	if img.shape[3] < maxY:
+		img = np.pad(img, ((0,),(0,),(0,),((maxY-img.shape[3])//2,),(0,)), mode='constant')
+	img = img[:,0,:,:,:]
+	img = np.transpose(img, (1, 3, 2, 0))
+	img = img[:,::-1,::-1,:]
+	return img
 
 #shapes = open("shapes.txt", "w+")
 #for f in folders:
 #	images = cfl.read('forIntel/%s/im_dce' % f)
 #	shapes.write("%s\n" % (images.shape,))
 #shapes.close()
+
+# 100 sets, folders with im_dce
+# turn each set into a txt file
+# three dictionaries - train, val, test
+# train[0] - string for the first train set
+# val[0] - string for first val set
+# test[0] - string for first test set
+# write function so you pass in "train[0]"
+# 	goes to dict, finds string
+# 	calls read func and does padding, reorienting
