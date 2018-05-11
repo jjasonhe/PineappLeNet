@@ -10,8 +10,13 @@ import importdata as i
 import cfl
 import h5py as h5 
 
-# img.shape = (Z, X, Y, T)
+'''
+image shape is (Z, X, Y, T)
+'''
 
+'''
+Visualization function for plotting each time frame
+'''
 def plot_time(data, Z, maxT):
 	plt.figure()
 	for j in range(0, maxT, 1):
@@ -20,6 +25,9 @@ def plot_time(data, Z, maxT):
 		a.set_title("t = %d" % j)
 	plt.show()
 
+'''
+Visualization function for plotting across the Z dimension
+'''
 def plot_slice(data, time):
 	plt.figure()
 	for j in range(0, 18, 1):
@@ -28,14 +36,28 @@ def plot_slice(data, time):
 		a.set_title("z = %d" % (j*data.shape[0]//18))
 	plt.show()
 
-# Creates hdf5 file, samples.h5
-# KeysView(<HDF5 group "/train" (5362 members)>)
-# KeysView(<HDF5 group "/val" (750 members)>)
-# KeysView(<HDF5 group "/test" (1434 members)>)
-# maxX,maxY,maxT = i.init()
-train_data,val_data,test_data = i.create_dicts()
-# i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT)
+'''
+Creates hdf5 file, samples.h5
+group /train contains 5362 datasets
+group /val   contains  750 datasets
+group /test  contains 1434 datasets
 
+i.create_dicts()
+Returns lists for train, val, test containing names of datasets (names)
+
+i.init()
+Creates shapes.txt (if it doesn't exist), returns maxX, maxY, maxT for zero padding
+
+i.create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT)
+Creates samples.h5, 46.74 GB file containing data split into groups
+'''
+train_data,val_data,test_data = i.create_dicts()
+# maxX,maxY,maxT = i.init()										 # only call once
+# i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # only call once
+
+'''
+Test reading from hdf5 file, samples.h5
+'''
 f = h5.File('samples.h5', 'r')
 train_d = f["train"]
 val_d= f["val"]
@@ -44,13 +66,9 @@ print(train_d["%s_000" % train_data[0]].shape)
 print(val_d["%s_000" % val_data[0]].shape)
 print(test_d["%s_000" % test_data[0]].shape)
 
+'''
+Test plot functions
+'''
 # img = i.fetch(train_data[0],maxX,maxY,maxT)
 # plot_time(img, 30, maxT)
 # plot_slice(img, 0)
-
-# f = h5.File('test.h5', 'w')
-# grp = f.create_group("train")
-# dset = grp.create_dataset("foldername", data=img)
-# print(grp.keys())
-
-#for i in range()
