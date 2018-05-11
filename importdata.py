@@ -176,6 +176,7 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 	i = 0
 	j = 0
 	for patient in train_dict:
+		print("training patient number %d" % i)
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
 		img_next = img[:,1:, :,:,:]
@@ -183,14 +184,14 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		f["train_curr"][j:j+Z*T]
-		f["train_next"][j:j+Z*T]
+		f["train_curr"][j:j+Z*T] = img_curr
+		f["train_next"][j:j+Z*T] = img_next
 		j = j+Z*T
-		print("training patient number %d" % i)
 		i = i + 1
 	i = 0
 	j = 0
 	for patient in val_dict:
+		print("validation patient number %d" % i)
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
 		img_next = img[:,1:, :,:,:]
@@ -198,14 +199,14 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		f["val_curr"][j:j+Z*T]
-		f["val_next"][j:j+Z*T]
+		f["val_curr"][j:j+Z*T] = img_curr
+		f["val_next"][j:j+Z*T] = img_next
 		j = j+Z*T
-		print("validation patient number %d" % i)
 		i = i + 1
 	i = 0
 	j = 0
 	for patient in test_dict:
+		print("testing patient number %d" % i)
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
 		img_next = img[:,1:, :,:,:]
@@ -213,10 +214,9 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		f["test_curr"][j:j+Z*T]
-		f["test_next"][j:j+Z*T]
+		f["test_curr"][j:j+Z*T] = img_curr
+		f["test_next"][j:j+Z*T] = img_next
 		j = j+Z*T
-		print("testing patient number %d" % i)
 		i = i + 1
 	f.close()
 	return
