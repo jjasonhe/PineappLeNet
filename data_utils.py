@@ -108,6 +108,7 @@ folders = [
 "05Jan16_Ex17914_Ser7"
 ]
 
+
 def init():
 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
 		txt = open("shapes.txt", "w")
