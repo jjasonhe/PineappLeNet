@@ -156,12 +156,6 @@ def fetch(f, maxX, maxY, maxT):
 
 
 def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, maxX, maxY, maxT):
-	#train_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	#train_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	#val_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	#val_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	#test_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	#test_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
 	txt = open("shapes.txt", "r")
 	shp = txt.read()
 	txt.close()
@@ -171,19 +165,16 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 	val_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train:num_train+num_val])
 	test_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train+num_val:num_train+num_val+num_test])
 
-	#train_curr = np.ones((train_size, maxY, maxX, 2))
-	#train_next = np.ones((train_size, maxY, maxX, 2))
-	val_curr = np.ones((val_size, maxY, maxX, 2))
-	val_next = np.ones((val_size, maxY, maxX, 2))
-	test_curr = np.ones((test_size, maxY, maxX, 2))
-	test_next = np.ones((test_size, maxY, maxX, 2))
-	print("hi")
-	return
-'''
 	f = h5.File('samples.h5', 'w')
-	
-	grp_1 = f.create_group("train")
+
+	f.create_dataset("train_curr", (train_size, maxY, maxX, 2), dtype='complex64')
+	f.create_dataset("train_next", (train_size, maxY, maxX, 2), dtype='complex64')
+	f.create_dataset("val_curr", (val_size, maxY, maxX, 2), dtype='complex64')
+	f.create_dataset("val_next", (val_size, maxY, maxX, 2), dtype='complex64')
+	f.create_dataset("test_curr", (test_size, maxY, maxX, 2), dtype='complex64')
+	f.create_dataset("test_next", (test_size, maxY, maxX, 2), dtype='complex64')
 	i = 0
+	j = 0
 	for patient in train_dict:
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
@@ -192,17 +183,13 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		train_curr = np.vstack([train_curr, img_curr])
-		train_next = np.vstack([train_next, img_next])
+		f["train_curr"][j:j+Z*T]
+		f["train_next"][j:j+Z*T]
+		j = j+Z*T
 		print("training patient number %d" % i)
-		print(train_curr.shape)
-		print(train_next.shape)
 		i = i + 1
-	dset1 = grp_1.create_dataset("curr_time", data=train_curr)
-	dset2 = grp_1.create_dataset("next_time", data=train_next)
-
-	grp_2 = f.create_group("val")
 	i = 0
+	j = 0
 	for patient in val_dict:
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
@@ -211,17 +198,13 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		val_curr = np.vstack([val_curr, img_curr])
-		val_next = np.vstack([val_next, img_next])
+		f["val_curr"][j:j+Z*T]
+		f["val_next"][j:j+Z*T]
+		j = j+Z*T
 		print("validation patient number %d" % i)
-		print(val_curr.shape)
-		print(val_next.shape)
 		i = i + 1
-	dset3 = grp_2.create_dataset("curr_time", data=val_curr)
-	dset4 = grp_2.create_dataset("next_time", data=val_next)
-
-	grp_3 = f.create_group("test")
 	i = 0
+	j = 0
 	for patient in test_dict:
 		img = fetch(patient, maxX, maxY, maxT)
 		img_curr = img[:,:-1,:,:,:]
@@ -230,65 +213,11 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
-		test_curr = np.vstack([test_curr, img_curr])
-		test_next = np.vstack([test_next, img_next])
+		f["test_curr"][j:j+Z*T]
+		f["test_next"][j:j+Z*T]
+		j = j+Z*T
 		print("testing patient number %d" % i)
-		print(test_curr.shape)
-		print(test_next.shape)
 		i = i + 1
-	dset5 = grp_3.create_dataset("curr_time", data=test_curr)
-	dset6 = grp_3.create_dataset("next_time", data=test_next)
-
-	print(f.keys())
-	print(grp_1.keys())
-	print(grp_2.keys())
-	print(grp_3.keys())
-	print(dset1.shape)
-	print(dset2.shape)
-	print(dset3.shape)
-	print(dset4.shape)
-	print(dset5.shape)
-	print(dset6.shape)
-	f.close()
-	return
-'''
-
-def create_h5_borke(train_dict, val_dict, test_dict, maxX, maxY, maxT):
-	f = h5.File('samples.h5', 'w')
-	grp_1 = f.create_group("train")
-	i = 0
-	for patient in train_dict:
-		img_4D = fetch(patient, maxX, maxY, maxT)
-		print("train patient %d" % i)
-		for z in range(img_4D.shape[0]):
-			num = str(z).rjust(3, '0')
-			dset = grp_1.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:]) # folder_name_000, folder_name_001, ...
-			print("train slice %d created" % z)
-		i = i + 1
-	grp_2 = f.create_group("val")
-	i = 0
-	for patient in val_dict:
-		img_4D = fetch(patient, maxX, maxY, maxT)
-		print("val patient %d" % i)
-		for z in range(img_4D.shape[0]):
-			num = str(z).rjust(3, '0')
-			dset = grp_2.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:])
-			print("val slice %d created" % z)
-		i = i + 1
-	grp_3 = f.create_group("test")
-	i = 0
-	for patient in test_dict:
-		img_4D = fetch(patient, maxX, maxY, maxT)
-		print("test patient %d" % i)
-		for z in range(img_4D.shape[0]):
-			num = str(z).rjust(3, '0')
-			dset = grp_3.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:])
-			print("test slice %d created" % z)
-		i = i + 1
-	print(f.keys())
-	print(grp_1.keys())
-	print(grp_2.keys())
-	print(grp_3.keys())
 	f.close()
 	return
 

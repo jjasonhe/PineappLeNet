@@ -38,9 +38,9 @@ def plot_slice(data, time):
 
 '''
 Creates hdf5 file, samples.h5
-group /train contains 5362 datasets
-group /val   contains  750 datasets
-group /test  contains 1434 datasets
+/train_curr 91154 /train_next 91154
+/val_curr   12750 /val_next   12750
+/test_curr  24378 /test_next  24378
 
 i.create_dicts()
 Returns lists for train, val, test containing names of datasets (names)
@@ -51,22 +51,23 @@ Creates shapes.txt (if it doesn't exist), returns maxX, maxY, maxT for zero padd
 i.create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT)
 Creates samples.h5, 46.74 GB file containing data split into groups
 '''
-num_train, num_val, num_test = 70, 10, 20
+#num_train, num_val, num_test = 70, 10, 20
 
-train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
-maxX,maxY,maxT = i.init()										 # only call once
-i.create_h5(num_train, num_val, num_test, train_data, val_data, test_data, maxX, maxY, maxT) # only call once
+# train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
+# maxX,maxY,maxT = i.init()										 # only call once
+# i.create_h5(num_train, num_val, num_test, train_data, val_data, test_data, maxX, maxY, maxT) # only call once
 
 '''
 Test reading from hdf5 file, samples.h5
 '''
-# f = h5.File('samples.h5', 'r')
-# train_d = f["train"]
-# val_d= f["val"]
-# test_d = f["test"]
-# print(train_d["%s_000" % train_data[0]].shape)
-# print(val_d["%s_000" % val_data[0]].shape)
-# print(test_d["%s_000" % test_data[0]].shape)
+f = h5.File('samples.h5', 'r')
+print(f["train_curr"].shape)
+print(f["train_next"].shape)
+print(f["val_curr"].shape)
+print(f["val_next"].shape)
+print(f["test_curr"].shape)
+print(f["test_next"].shape)
+f.close()
 
 '''
 Test plot functions
