@@ -132,10 +132,10 @@ def init():
 	return maxX,maxY,maxT
 
 
-def create_dicts():
-	train_dict = list(folders[0:70])
-	val_dict = list(folders[70:80])
-	test_dict = list(folders[80:100])
+def create_dicts(num_train, num_val, num_test):
+	train_dict = list(folders[0:num_train])
+	val_dict = list(folders[num_train:num_train+num_val])
+	test_dict = list(folders[num_train+num_val:num_train+num_val+num_test])
 	return train_dict,val_dict,test_dict
 
 
@@ -155,13 +155,31 @@ def fetch(f, maxX, maxY, maxT):
 	return img
 
 
-def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
-	train_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	train_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	val_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	val_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	test_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
-	test_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, maxX, maxY, maxT):
+	#train_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	#train_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	#val_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	#val_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	#test_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	#test_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	txt = open("shapes.txt", "r")
+	shp = txt.read()
+	txt.close()
+	shp = list(ast.literal_eval(shp))
+
+	train_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[0:num_train])
+	val_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train:num_train+num_val])
+	test_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train+num_val:num_train+num_val+num_test])
+
+	train_curr = np.ones((train_size, maxY, maxX, 2))
+	train_next = np.ones((train_size, maxY, maxX, 2))
+	val_curr = np.ones((val_size, maxY, maxX, 2))
+	val_next = np.ones((val_size, maxY, maxX, 2))
+	test_curr = np.ones((test_size, maxY, maxX, 2))
+	test_next = np.ones((test_size, maxY, maxX, 2))
+	print("hi")
+	return
+'''
 	f = h5.File('samples.h5', 'w')
 	
 	grp_1 = f.create_group("train")
@@ -233,7 +251,7 @@ def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	print(dset6.shape)
 	f.close()
 	return
-
+'''
 
 def create_h5_borke(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	f = h5.File('samples.h5', 'w')

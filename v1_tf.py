@@ -51,9 +51,11 @@ Creates shapes.txt (if it doesn't exist), returns maxX, maxY, maxT for zero padd
 i.create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT)
 Creates samples.h5, 46.74 GB file containing data split into groups
 '''
-train_data,val_data,test_data = i.create_dicts()
+num_train, num_val, num_test = 70, 10, 20
+
+train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
 maxX,maxY,maxT = i.init()										 # only call once
-i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # only call once
+i.create_h5(num_train, num_val, num_test, train_data, val_data, test_data, maxX, maxY, maxT) # only call once
 
 '''
 Test reading from hdf5 file, samples.h5
