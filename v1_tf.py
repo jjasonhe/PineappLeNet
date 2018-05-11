@@ -4,6 +4,7 @@ import numpy as np
 import math
 import timeit
 import matplotlib.pyplot as plt
+matplotlib.use('agg')
 import pandas as pd 
 import seaborn as sb
 import importdata as i
