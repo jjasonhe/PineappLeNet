@@ -192,6 +192,7 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		f["train_next"][j:j+Z*T] = img_next
 		print("test test test")
 		j = j+Z*T
+		print(j)
 		i = i + 1
 	i = 0
 	j = 0
