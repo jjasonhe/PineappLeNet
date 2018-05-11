@@ -3,12 +3,10 @@ import tensorflow as tf
 import numpy as np
 import math
 import timeit
-import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
 import pandas as pd 
 import seaborn as sb
-import importdata as i
+import data_utils as du
 import cfl
 import h5py as h5 
 
@@ -60,23 +58,23 @@ Creates hdf5 file, samples.h5
 /val_curr   12750 /val_next   12750
 /test_curr  24378 /test_next  24378
 
-i.create_dicts()
+du.create_dicts()
 Returns lists for train, val, test containing names of datasets (names)
 
-i.init()
+du.init()
 Creates shapes.txt (if it doesn't exist); returns maxX, maxY, maxT for zero padding
 
-i.<dict>_h5(<dict>, maxX, maxY, maxT)
+du.<dict>_h5(<dict>, maxX, maxY, maxT)
 Each call creates 2 h5 files, current and next
 '''
 num_train, num_val, num_test = 70, 10, 20
 
-train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
-# maxX,maxY,maxT = i.init() # call once
-# i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
-# i.val_h5(val_data, maxX, maxY, maxT)
-# i.test_h5(test_data, maxX, maxY, maxT)
-# i.train_h5(train_data, maxX, maxY, maxT)
+train_data,val_data,test_data = du.create_dicts(num_train, num_val, num_test)
+# maxX,maxY,maxT = du.init() # call once
+# du.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
+# du.val_h5(val_data, maxX, maxY, maxT)
+# du.test_h5(test_data, maxX, maxY, maxT)
+# du.train_h5(train_data, maxX, maxY, maxT)
 
 '''
 Test reading from hdf5 file, samples.h5

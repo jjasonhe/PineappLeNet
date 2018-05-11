@@ -1,7 +1,6 @@
 import os
 import ast
 import numpy as np
-import tensorflow as tf
 import cfl
 import h5py as h5
 from operator import itemgetter
@@ -109,7 +108,6 @@ folders = [
 "05Jan16_Ex17914_Ser7"
 ]
 
-
 def init():
 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
 		txt = open("shapes.txt", "w")
@@ -125,7 +123,6 @@ def init():
 	shp = txt.read()
 	txt.close()
 	shp = list(ast.literal_eval(shp))
-	#print(shp)
 	maxX = max(shp, key=itemgetter(4))[4]
 	maxY = max(shp, key=itemgetter(3))[3]
 	maxT = max(shp, key=itemgetter(0))[0]
@@ -151,13 +148,12 @@ def fetch(f, maxX, maxY, maxT):
 		img = np.pad(img, ((0,),(0,),((maxY-img.shape[2])//2,),(0,)), mode='constant')
 	img = np.transpose(img, (1, 0, 2, 3)) # (Z, T, Y, X)
 	img = img[:,:,::-1,::-1]
-	# img = tf.convert_to_tensor(img, tf.complex64)
 	return img
 
 
 def train_h5(train_dict, maxX, maxY, maxT):
-	fc = h5.File('train_curr.h5', 'w')
-	fn = h5.File('train_next.h5', 'w')
+	fc = h5.File('datasets/train_curr.h5', 'w')
+	fn = h5.File('datasets/train_next.h5', 'w')
 	i = 0
 	for patient in train_dict:
 		img = fetch(patient, maxX, maxY, maxT)
@@ -176,8 +172,8 @@ def train_h5(train_dict, maxX, maxY, maxT):
 	return
 
 def val_h5(val_dict, maxX, maxY, maxT):
-	fc = h5.File('val_curr.h5', 'w')
-	fn = h5.File('val_next.h5', 'w')
+	fc = h5.File('datasets/val_curr.h5', 'w')
+	fn = h5.File('datasets/val_next.h5', 'w')
 	i = 0
 	for patient in val_dict:
 		img = fetch(patient, maxX, maxY, maxT)
@@ -196,8 +192,8 @@ def val_h5(val_dict, maxX, maxY, maxT):
 	return
 
 def test_h5(test_dict, maxX, maxY, maxT):
-	fc = h5.File('test_curr.h5', 'w')
-	fn = h5.File('test_next.h5', 'w')
+	fc = h5.File('datasets/test_curr.h5', 'w')
+	fn = h5.File('datasets/test_next.h5', 'w')
 	i = 0
 	for patient in test_dict:
 		img = fetch(patient, maxX, maxY, maxT)
@@ -214,70 +210,3 @@ def test_h5(test_dict, maxX, maxY, maxT):
 	fc.close()
 	fn.close()
 	return
-
-'''
-	f = h5.File('samples.h5', 'w')
-	g1 = f.create_group("train_curr")
-	g2 = f.create_group("train_next")
-	g3 = f.create_group("val_curr")
-	g4 = f.create_group("val_next")
-	g5 = f.create_group("test_curr")
-	g6 = f.create_group("test_next")
-
-	i = 0
-	for patient in train_dict[0:1]:
-		img = fetch(patient, maxX, maxY, maxT)
-		#Z,T,Y,X = img.shape
-		#img = img.reshape(Z*T,Y,X)
-		#g1.create_dataset("%s" % patient, data=img)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		g1.create_dataset("%s" % patient, data=img_curr)
-		g2.create_dataset("%s" % patient, data=img_next)
-		print("trained patient %d" % i)
-		i = i + 1
-	i = 0
-	for patient in val_dict[0:1]:
-		img = fetch(patient, maxX, maxY, maxT)
-		#Z,T,Y,X = img.shape
-		#img = img.reshape(Z*T,Y,X)
-		#g3.create_dataset("%s" % patient, data=img)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		g3.create_dataset("%s" % patient, data=img_curr)
-		g4.create_dataset("%s" % patient, data=img_next)
-		print("validated patient %d" % i)
-		i = i + 1
-	i = 0
-	for patient in test_dict[0:1]:
-		img = fetch(patient, maxX, maxY, maxT)
-		#Z,T,Y,X = img.shape
-		#img = img.reshape(Z*T,Y,X)
-		#g5.create_dataset("%s" % patient, data=img)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		g5.create_dataset("%s" % patient, data=img_curr)
-		g6.create_dataset("%s" % patient, data=img_next)
-		print("tested patient %d" % i)
-		i = i + 1
-	print(g1.keys())
-	print(g2.keys())
-	print(g3.keys())
-	print(g4.keys())
-	print(g5.keys())
-	print(g6.keys())
-	f.close()
-	return
-'''
