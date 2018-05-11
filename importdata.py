@@ -184,8 +184,11 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 		img_curr = img_curr.reshape(Z*T,Y,X,C)
 		Z,T,Y,X,C = img_next.shape
 		img_next = img_next.reshape(Z*T,Y,X,C)
+		print("test")
 		f["train_curr"][j:j+Z*T] = img_curr
+		print("test test")
 		f["train_next"][j:j+Z*T] = img_next
+		print("test test test")
 		j = j+Z*T
 		i = i + 1
 	i = 0
