@@ -28,14 +28,14 @@ def plot_time(data, Z, maxT):
 
 
 def plot_time_step(slice1, slice2):
-	slice1 = slice1.transpose(1,0,2)
-	slice2 = slice2.transpose(1,0,2)
+	slice1 = slice1.transpose(1,0)
+	slice2 = slice2.transpose(1,0)
 	plt.figure()
 	a = plt.subplot(2,1,1)
-	plt.imshow(np.abs(slice1[:,:,1]), cmap='gray')
+	plt.imshow(np.abs(slice1[:,:]), cmap='gray')
 	a.set_title("t")
 	a = plt.subplot(2,1,2)
-	plt.imshow(np.abs(slice2[:,:,1]), cmap='gray')
+	plt.imshow(np.abs(slice2[:,:]), cmap='gray')
 	a.set_title("t+1")
 	plt.show()
 
