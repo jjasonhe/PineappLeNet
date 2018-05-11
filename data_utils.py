@@ -171,6 +171,7 @@ def train_h5(train_dict, maxX, maxY, maxT):
 	fn.close()
 	return
 
+
 def val_h5(val_dict, maxX, maxY, maxT):
 	fc = h5.File('datasets/val_curr.h5', 'w')
 	fn = h5.File('datasets/val_next.h5', 'w')
@@ -190,6 +191,7 @@ def val_h5(val_dict, maxX, maxY, maxT):
 	fc.close()
 	fn.close()
 	return
+
 
 def test_h5(test_dict, maxX, maxY, maxT):
 	fc = h5.File('datasets/test_curr.h5', 'w')
