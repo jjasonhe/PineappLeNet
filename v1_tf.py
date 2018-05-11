@@ -11,8 +11,8 @@ import cfl
 import h5py as h5 
 
 '''
-arrays are (N, Y, X, 2)
-slices are (Y, X, 2)
+arrays are (N, Y, X)
+slices are (Y, X)
 '''
 
 '''
@@ -71,7 +71,7 @@ num_train, num_val, num_test = 70, 10, 20
 
 train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
 maxX,maxY,maxT = i.init() # call once
-i.create_h5(num_train, num_val, num_test, train_data, val_data, test_data, maxX, maxY, maxT) # call once
+i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
 
 '''
 Test reading from hdf5 file, samples.h5

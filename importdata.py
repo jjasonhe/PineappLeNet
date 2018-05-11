@@ -142,91 +142,78 @@ def create_dicts(num_train, num_val, num_test):
 def fetch(f, maxX, maxY, maxT):
 	img = cfl.read('datasets/%s/im_dce' % f)
 	img = np.squeeze(img)
-	if img.shape[4] < maxX:
-		img = np.pad(img, ((0,),(0,),(0,),(0,),((maxX-img.shape[4])//2,)), mode='constant')
-	if img.shape[3] < maxY:
-		img = np.pad(img, ((0,),(0,),(0,),((maxY-img.shape[3])//2,),(0,)), mode='constant')
-	# img = img[:,0,:,:,:]
-	# img = np.transpose(img, (1, 3, 2, 0))
-	#img = img[:,::-1,::-1,:]
-	img = np.transpose(img, (2, 0, 3, 4, 1)) # (Z, T, Y, X, C)
-	img = img[:,:,::-1,::-1,:]
+	# img.shape is (T, C, Z, Y, X)
+	img = img[:,0,:,:,:]
+	# img.shape is (T, Z, Y, X)
+	if img.shape[3] < maxX:
+		img = np.pad(img, ((0,),(0,),(0,),((maxX-img.shape[3])//2,)), mode='constant')
+	if img.shape[2] < maxY:
+		img = np.pad(img, ((0,),(0,),((maxY-img.shape[2])//2,),(0,)), mode='constant')
+	img = np.transpose(img, (1, 0, 2, 3)) # (Z, T, Y, X)
+	img = img[:,:,::-1,::-1]
 	# img = tf.convert_to_tensor(img, tf.complex64)
 	return img
 
 
-def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, maxX, maxY, maxT):
-	txt = open("shapes.txt", "r")
-	shp = txt.read()
-	txt.close()
-	shp = list(ast.literal_eval(shp))
-
-	train_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[0:num_train])
-	val_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train:num_train+num_val])
-	test_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train+num_val:num_train+num_val+num_test])
-
+def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	f = h5.File('samples.h5', 'w')
+	g1 = f.create_group("train_curr")
+	#g2 = f.create_group("train_next")
+	g3 = f.create_group("val_curr")
+	#g4 = f.create_group("val_next")
+	g5 = f.create_group("test_curr")
+	#g6 = f.create_group("test_next")
 
-	f.create_dataset("train_curr", (train_size, maxY, maxX, 2), dtype='complex64')
-	f.create_dataset("train_next", (train_size, maxY, maxX, 2), dtype='complex64')
-	f.create_dataset("val_curr", (val_size, maxY, maxX, 2), dtype='complex64')
-	f.create_dataset("val_next", (val_size, maxY, maxX, 2), dtype='complex64')
-	f.create_dataset("test_curr", (test_size, maxY, maxX, 2), dtype='complex64')
-	f.create_dataset("test_next", (test_size, maxY, maxX, 2), dtype='complex64')
 	i = 0
-	j = 0
-	for patient in train_dict:
-		print("training patient number %d" % i)
+	for patient in train_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:,:]
-		print(img_curr.shape)
-		img_next = img[:,1:, :,:,:]
-		print(img_next.shape)
-		Z,T,Y,X,C = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X,C)
-		Z,T,Y,X,C = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X,C)
-		print("test")
-		f["train_curr"][j:j+Z*T] = img_curr
-		print("test test")
-		f["train_next"][j:j+Z*T] = img_next
-		print("test test test")
-		j = j+Z*T
-		print(j)
+		Z,T,Y,X = img.shape
+		img = img.reshape(Z*T,Y,X)
+		g1.create_dataset("%s" % patient, data=img)
+		#img_curr = img[:,:-1,:,:,:]
+		#img_next = img[:,1:, :,:,:]
+		#Z,T,Y,X = img_curr.shape
+		#img_curr = img_curr.reshape(Z*T,Y,X)
+		#Z,T,Y,X = img_next.shape
+		#img_next = img_next.reshape(Z*T,Y,X)
+		#g1.create_dataset("%s" % patient, data=img_curr)
+		#g2.create_dataset("%s" % patient, data=img_next)
+		print("trained patient %d" % i)
 		i = i + 1
 	i = 0
-	j = 0
-	for patient in val_dict:
-		print("validation patient number %d" % i)
+	for patient in val_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:,:]
-		img_next = img[:,1:, :,:,:]
-		Z,T,Y,X,C = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X,C)
-		Z,T,Y,X,C = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X,C)
-		f["val_curr"][j:j+Z*T] = img_curr
-		f["val_next"][j:j+Z*T] = img_next
-		j = j+Z*T
+		Z,T,Y,X = img.shape
+		img = img.reshape(Z*T,Y,X)
+		g3.create_dataset("%s" % patient, data=img)
+		#img_curr = img[:,:-1,:,:,:]
+		#img_next = img[:,1:, :,:,:]
+		#Z,T,Y,X,C = img_curr.shape
+		#img_curr = img_curr.reshape(Z*T,Y,X,C)
+		#Z,T,Y,X,C = img_next.shape
+		#img_next = img_next.reshape(Z*T,Y,X,C)
+		#g3.create_dataset("%s" % patient, data=img_curr)
+		#g4.create_dataset("%s" % patient, data=img_next)
+		print("validated patient %d" % i)
 		i = i + 1
 	i = 0
-	j = 0
-	for patient in test_dict:
-		print("testing patient number %d" % i)
+	for patient in test_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:,:]
-		img_next = img[:,1:, :,:,:]
-		Z,T,Y,X,C = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X,C)
-		Z,T,Y,X,C = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X,C)
-		f["test_curr"][j:j+Z*T] = img_curr
-		f["test_next"][j:j+Z*T] = img_next
-		j = j+Z*T
+		Z,T,Y,X = img.shape
+		img = img.reshape(Z*T,Y,X)
+		g5.create_dataset("%s" % patient, data=img)
+		#img_curr = img[:,:-1,:,:,:]
+		#img_next = img[:,1:, :,:,:]
+		#Z,T,Y,X,C = img_curr.shape
+		#img_curr = img_curr.reshape(Z*T,Y,X,C)
+		#Z,T,Y,X,C = img_next.shape
+		#img_next = img_next.reshape(Z*T,Y,X,C)
+		#g5.create_dataset("%s" % patient, data=img_curr)
+		#g6.create_dataset("%s" % patient, data=img_next)
+		print("tested patient %d" % i)
 		i = i + 1
+	print(g1.keys())
+	print(g3.keys())
+	print(g5.keys())
 	f.close()
-	return
-
-
-def create_tfrec(dict, name):
 	return
