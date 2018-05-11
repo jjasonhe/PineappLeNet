@@ -1,7 +1,9 @@
 import os
 import ast
 import numpy as np
+import tensorflow as tf
 import cfl
+import h5py as h5
 from operator import itemgetter
 
 folders = [
@@ -110,10 +112,13 @@ folders = [
 def init():
 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
 		txt = open("shapes.txt", "w")
+		i = 0
 		for f in folders:
 			img = cfl.read('datasets/%s/im_dce' % f)
 			img = np.squeeze(img)
 			txt.write("%s," % (img.shape,))
+			print(i)
+			i = i + 1
 		txt.close()
 	txt = open("shapes.txt", "r")
 	shp = txt.read()
@@ -141,4 +146,47 @@ def fetch(f, maxX, maxY, maxT):
 	img = img[:,0,:,:,:]
 	img = np.transpose(img, (1, 3, 2, 0))
 	img = img[:,::-1,::-1,:]
+	#img = tf.convert_to_tensor(img, tf.complex64)
 	return img
+
+def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
+	f = h5.File('samples.h5', 'w')
+	grp_1 = f.create_group("train")
+	i = 0
+	for patient in train_dict:
+		img_4D = fetch(patient, maxX, maxY, maxT)
+		print("train patient %d" % i)
+		for z in range(img_4D.shape[0]):
+			num = str(z).rjust(3, '0')
+			dset = grp_1.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:]) # folder_name_000, folder_name_001, ...
+			print("train slice %d created" % z)
+		i = i + 1
+	grp_2 = f.create_group("val")
+	i = 0
+	for patient in val_dict:
+		img_4D = fetch(patient, maxX, maxY, maxT)
+		print("val patient %d" % i)
+		for z in range(img_4D.shape[0]):
+			num = str(z).rjust(3, '0')
+			dset = grp_2.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:])
+			print("val slice %d created" % z)
+		i = i + 1
+	grp_3 = f.create_group("test")
+	i = 0
+	for patient in test_dict:
+		img_4D = fetch(patient, maxX, maxY, maxT)
+		print("test patient %d" % i)
+		for z in range(img_4D.shape[0]):
+			num = str(z).rjust(3, '0')
+			dset = grp_3.create_dataset("%s_%s" % (patient, num), data=img_4D[z,:,:,:])
+			print("test slice %d created" % z)
+		i = i + 1
+	print(f.keys())
+	print(grp_1.keys())
+	print(grp_2.keys())
+	print(grp_3.keys())
+	f.close()
+	return
+
+def create_tfrec(dict, name):
+	return
