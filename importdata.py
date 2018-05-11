@@ -171,8 +171,8 @@ def create_h5(num_train, num_val, num_test, train_dict, val_dict, test_dict, max
 	val_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train:num_train+num_val])
 	test_size = (maxT-1) * sum(k for _,_,k,_,_ in shp[num_train+num_val:num_train+num_val+num_test])
 
-	train_curr = np.ones((train_size, maxY, maxX, 2))
-	train_next = np.ones((train_size, maxY, maxX, 2))
+	#train_curr = np.ones((train_size, maxY, maxX, 2))
+	#train_next = np.ones((train_size, maxY, maxX, 2))
 	val_curr = np.ones((val_size, maxY, maxX, 2))
 	val_next = np.ones((val_size, maxY, maxX, 2))
 	test_curr = np.ones((test_size, maxY, maxX, 2))
