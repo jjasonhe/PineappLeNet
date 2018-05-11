@@ -62,19 +62,19 @@ i.create_dicts()
 Returns lists for train, val, test containing names of datasets (names)
 
 i.init()
-Creates shapes.txt (if it doesn't exist), returns maxX, maxY, maxT for zero padding
+Creates shapes.txt (if it doesn't exist); returns maxX, maxY, maxT for zero padding
 
-i.create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT)
-Creates samples.h5, 46.74 GB file containing data split into groups
+i.<dict>_h5(<dict>, maxX, maxY, maxT)
+Each call creates 2 h5 files, current and next
 '''
-num_train, num_val, num_test = 70, 10, 20
+# num_train, num_val, num_test = 70, 10, 20
 
-train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
-maxX,maxY,maxT = i.init() # call once
-#i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
-i.val_h5(val_data, maxX, maxY, maxT)
-i.test_h5(test_data, maxX, maxY, maxT)
-i.train_h5(train_data, maxX, maxY, maxT)
+# train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
+# maxX,maxY,maxT = i.init() # call once
+# i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
+# i.val_h5(val_data, maxX, maxY, maxT)
+# i.test_h5(test_data, maxX, maxY, maxT)
+# i.train_h5(train_data, maxX, maxY, maxT)
 
 '''
 Test reading from hdf5 file, samples.h5
