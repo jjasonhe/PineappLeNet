@@ -52,19 +52,19 @@ i.create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT)
 Creates samples.h5, 46.74 GB file containing data split into groups
 '''
 train_data,val_data,test_data = i.create_dicts()
-# maxX,maxY,maxT = i.init()										 # only call once
-# i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # only call once
+maxX,maxY,maxT = i.init()										 # only call once
+i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # only call once
 
 '''
 Test reading from hdf5 file, samples.h5
 '''
-f = h5.File('samples.h5', 'r')
-train_d = f["train"]
-val_d= f["val"]
-test_d = f["test"]
-print(train_d["%s_000" % train_data[0]].shape)
-print(val_d["%s_000" % val_data[0]].shape)
-print(test_d["%s_000" % test_data[0]].shape)
+# f = h5.File('samples.h5', 'r')
+# train_d = f["train"]
+# val_d= f["val"]
+# test_d = f["test"]
+# print(train_d["%s_000" % train_data[0]].shape)
+# print(val_d["%s_000" % val_data[0]].shape)
+# print(test_d["%s_000" % test_data[0]].shape)
 
 '''
 Test plot functions

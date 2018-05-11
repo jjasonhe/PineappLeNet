@@ -109,6 +109,7 @@ folders = [
 "05Jan16_Ex17914_Ser7"
 ]
 
+
 def init():
 	if (not os.path.exists("shapes.txt")) or (not os.path.getsize("shapes.txt") > 0):
 		txt = open("shapes.txt", "w")
@@ -130,11 +131,13 @@ def init():
 	maxT = max(shp, key=itemgetter(0))[0]
 	return maxX,maxY,maxT
 
+
 def create_dicts():
 	train_dict = list(folders[0:70])
 	val_dict = list(folders[70:80])
 	test_dict = list(folders[80:100])
 	return train_dict,val_dict,test_dict
+
 
 def fetch(f, maxX, maxY, maxT):
 	img = cfl.read('datasets/%s/im_dce' % f)
@@ -143,13 +146,96 @@ def fetch(f, maxX, maxY, maxT):
 		img = np.pad(img, ((0,),(0,),(0,),(0,),((maxX-img.shape[4])//2,)), mode='constant')
 	if img.shape[3] < maxY:
 		img = np.pad(img, ((0,),(0,),(0,),((maxY-img.shape[3])//2,),(0,)), mode='constant')
-	img = img[:,0,:,:,:]
-	img = np.transpose(img, (1, 3, 2, 0))
-	img = img[:,::-1,::-1,:]
-	#img = tf.convert_to_tensor(img, tf.complex64)
+	# img = img[:,0,:,:,:]
+	# img = np.transpose(img, (1, 3, 2, 0))
+	#img = img[:,::-1,::-1,:]
+	img = np.transpose(img, (2, 0, 3, 4, 1)) # (Z, T, Y, X, C)
+	img = img[:,:,::-1,::-1,:]
+	# img = tf.convert_to_tensor(img, tf.complex64)
 	return img
 
+
 def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
+	train_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	train_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	val_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	val_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	test_curr = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	test_next = np.array([], dtype=np.complex64).reshape(0, maxY, maxX, 2)
+	f = h5.File('samples.h5', 'w')
+	
+	grp_1 = f.create_group("train")
+	i = 0
+	for patient in train_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:,:]
+		img_next = img[:,1:, :,:,:]
+		Z,T,Y,X,C = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X,C)
+		Z,T,Y,X,C = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X,C)
+		train_curr = np.vstack([train_curr, img_curr])
+		train_next = np.vstack([train_next, img_next])
+		print("training patient number %d" % i)
+		print(train_curr.shape)
+		print(train_next.shape)
+		i = i + 1
+	dset1 = grp_1.create_dataset("curr_time", data=train_curr)
+	dset2 = grp_1.create_dataset("next_time", data=train_next)
+
+	grp_2 = f.create_group("val")
+	i = 0
+	for patient in val_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:,:]
+		img_next = img[:,1:, :,:,:]
+		Z,T,Y,X,C = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X,C)
+		Z,T,Y,X,C = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X,C)
+		val_curr = np.vstack([val_curr, img_curr])
+		val_next = np.vstack([val_next, img_next])
+		print("validation patient number %d" % i)
+		print(val_curr.shape)
+		print(val_next.shape)
+		i = i + 1
+	dset3 = grp_2.create_dataset("curr_time", data=val_curr)
+	dset4 = grp_2.create_dataset("next_time", data=val_next)
+
+	grp_3 = f.create_group("test")
+	i = 0
+	for patient in test_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:,:]
+		img_next = img[:,1:, :,:,:]
+		Z,T,Y,X,C = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X,C)
+		Z,T,Y,X,C = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X,C)
+		test_curr = np.vstack([test_curr, img_curr])
+		test_next = np.vstack([test_next, img_next])
+		print("testing patient number %d" % i)
+		print(test_curr.shape)
+		print(test_next.shape)
+		i = i + 1
+	dset5 = grp_3.create_dataset("curr_time", data=test_curr)
+	dset6 = grp_3.create_dataset("next_time", data=test_next)
+
+	print(f.keys())
+	print(grp_1.keys())
+	print(grp_2.keys())
+	print(grp_3.keys())
+	print(dset1.shape)
+	print(dset2.shape)
+	print(dset3.shape)
+	print(dset4.shape)
+	print(dset5.shape)
+	print(dset6.shape)
+	f.close()
+	return
+
+
+def create_h5_borke(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	f = h5.File('samples.h5', 'w')
 	grp_1 = f.create_group("train")
 	i = 0
@@ -187,6 +273,7 @@ def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	print(grp_3.keys())
 	f.close()
 	return
+
 
 def create_tfrec(dict, name):
 	return
