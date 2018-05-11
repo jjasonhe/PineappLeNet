@@ -155,7 +155,67 @@ def fetch(f, maxX, maxY, maxT):
 	return img
 
 
-def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
+def train_h5(train_dict, maxX, maxY, maxT):
+	fc = h5.File('train_curr.h5', 'w')
+	fn = h5.File('train_next.h5', 'w')
+	i = 0
+	for patient in train_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		fc.create_dataset("%s" % patient, data=img_curr)
+		fn.create_dataset("%s" % patient, data=img_next)
+		print("trained patient %d" % i)
+		i = i + 1
+	fc.close()
+	fn.close()
+	return
+
+def val_h5(val_dict, maxX, maxY, maxT):
+	fc = h5.File('val_curr.h5', 'w')
+	fn = h5.File('val_next.h5', 'w')
+	i = 0
+	for patient in val_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		fc.create_dataset("%s" % patient, data=img_curr)
+		fn.create_dataset("%s" % patient, data=img_next)
+		print("validated patient %d" % i)
+		i = i + 1
+	fc.close()
+	fn.close()
+	return
+
+def test_h5(test_dict, maxX, maxY, maxT):
+	fc = h5.File('test_curr.h5', 'w')
+	fn = h5.File('test_next.h5', 'w')
+	i = 0
+	for patient in test_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		fc.create_dataset("%s" % patient, data=img_curr)
+		fn.create_dataset("%s" % patient, data=img_next)
+		print("tested patient %d" % i)
+		i = i + 1
+	fc.close()
+	fn.close()
+	return
+
+'''
 	f = h5.File('samples.h5', 'w')
 	g1 = f.create_group("train_curr")
 	g2 = f.create_group("train_next")
@@ -220,3 +280,4 @@ def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	print(g6.keys())
 	f.close()
 	return
+'''

@@ -71,7 +71,10 @@ num_train, num_val, num_test = 70, 10, 20
 
 train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
 maxX,maxY,maxT = i.init() # call once
-i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
+#i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
+i.val_h5(val_data, maxX, maxY, maxT)
+i.test_h5(test_data, maxX, maxY, maxT)
+i.train_h5(train_data, maxX, maxY, maxT)
 
 '''
 Test reading from hdf5 file, samples.h5
