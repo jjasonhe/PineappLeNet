@@ -158,62 +158,65 @@ def fetch(f, maxX, maxY, maxT):
 def create_h5(train_dict, val_dict, test_dict, maxX, maxY, maxT):
 	f = h5.File('samples.h5', 'w')
 	g1 = f.create_group("train_curr")
-	#g2 = f.create_group("train_next")
+	g2 = f.create_group("train_next")
 	g3 = f.create_group("val_curr")
-	#g4 = f.create_group("val_next")
+	g4 = f.create_group("val_next")
 	g5 = f.create_group("test_curr")
-	#g6 = f.create_group("test_next")
+	g6 = f.create_group("test_next")
 
 	i = 0
 	for patient in train_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		Z,T,Y,X = img.shape
-		img = img.reshape(Z*T,Y,X)
-		g1.create_dataset("%s" % patient, data=img)
-		#img_curr = img[:,:-1,:,:,:]
-		#img_next = img[:,1:, :,:,:]
-		#Z,T,Y,X = img_curr.shape
-		#img_curr = img_curr.reshape(Z*T,Y,X)
-		#Z,T,Y,X = img_next.shape
-		#img_next = img_next.reshape(Z*T,Y,X)
-		#g1.create_dataset("%s" % patient, data=img_curr)
-		#g2.create_dataset("%s" % patient, data=img_next)
+		#Z,T,Y,X = img.shape
+		#img = img.reshape(Z*T,Y,X)
+		#g1.create_dataset("%s" % patient, data=img)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		g1.create_dataset("%s" % patient, data=img_curr)
+		g2.create_dataset("%s" % patient, data=img_next)
 		print("trained patient %d" % i)
 		i = i + 1
 	i = 0
 	for patient in val_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		Z,T,Y,X = img.shape
-		img = img.reshape(Z*T,Y,X)
-		g3.create_dataset("%s" % patient, data=img)
-		#img_curr = img[:,:-1,:,:,:]
-		#img_next = img[:,1:, :,:,:]
-		#Z,T,Y,X,C = img_curr.shape
-		#img_curr = img_curr.reshape(Z*T,Y,X,C)
-		#Z,T,Y,X,C = img_next.shape
-		#img_next = img_next.reshape(Z*T,Y,X,C)
-		#g3.create_dataset("%s" % patient, data=img_curr)
-		#g4.create_dataset("%s" % patient, data=img_next)
+		#Z,T,Y,X = img.shape
+		#img = img.reshape(Z*T,Y,X)
+		#g3.create_dataset("%s" % patient, data=img)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		g3.create_dataset("%s" % patient, data=img_curr)
+		g4.create_dataset("%s" % patient, data=img_next)
 		print("validated patient %d" % i)
 		i = i + 1
 	i = 0
 	for patient in test_dict[0:1]:
 		img = fetch(patient, maxX, maxY, maxT)
-		Z,T,Y,X = img.shape
-		img = img.reshape(Z*T,Y,X)
-		g5.create_dataset("%s" % patient, data=img)
-		#img_curr = img[:,:-1,:,:,:]
-		#img_next = img[:,1:, :,:,:]
-		#Z,T,Y,X,C = img_curr.shape
-		#img_curr = img_curr.reshape(Z*T,Y,X,C)
-		#Z,T,Y,X,C = img_next.shape
-		#img_next = img_next.reshape(Z*T,Y,X,C)
-		#g5.create_dataset("%s" % patient, data=img_curr)
-		#g6.create_dataset("%s" % patient, data=img_next)
+		#Z,T,Y,X = img.shape
+		#img = img.reshape(Z*T,Y,X)
+		#g5.create_dataset("%s" % patient, data=img)
+		img_curr = img[:,:-1,:,:]
+		img_next = img[:,1:, :,:]
+		Z,T,Y,X = img_curr.shape
+		img_curr = img_curr.reshape(Z*T,Y,X)
+		Z,T,Y,X = img_next.shape
+		img_next = img_next.reshape(Z*T,Y,X)
+		g5.create_dataset("%s" % patient, data=img_curr)
+		g6.create_dataset("%s" % patient, data=img_next)
 		print("tested patient %d" % i)
 		i = i + 1
 	print(g1.keys())
+	print(g2.keys())
 	print(g3.keys())
+	print(g4.keys())
 	print(g5.keys())
+	print(g6.keys())
 	f.close()
 	return
