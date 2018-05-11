@@ -3,8 +3,9 @@ import tensorflow as tf
 import numpy as np
 import math
 import timeit
-import matplotlib.pyplot as plt
+import matplotlib
 matplotlib.use('agg')
+import pyplot as plt
 import pandas as pd 
 import seaborn as sb
 import importdata as i
