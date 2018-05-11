@@ -61,7 +61,7 @@ Creates samples.h5, 46.74 GB file containing data split into groups
 Test reading from hdf5 file, samples.h5
 '''
 f = h5.File('samples.h5', 'r')
-print(f["train_curr"].shape)
+print(f["train_curr"][0].shape)
 print(f["train_next"].shape)
 print(f["val_curr"].shape)
 print(f["val_next"].shape)
