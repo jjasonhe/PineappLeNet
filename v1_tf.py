@@ -11,7 +11,8 @@ import cfl
 import h5py as h5 
 
 '''
-image shape is (Z, X, Y, T)
+arrays are (N, Y, X, 2)
+slices are (Y, X, 2)
 '''
 
 '''
@@ -23,6 +24,19 @@ def plot_time(data, Z, maxT):
 		a = plt.subplot(3,6,j+1)
 		plt.imshow(np.abs(img[Z,:,:,j]), cmap='gray')
 		a.set_title("t = %d" % j)
+	plt.show()
+
+
+def plot_time_step(slice1, slice2):
+	slice1 = slice1.transpose(1,0,2)
+	slice2 = slice2.transpose(1,0,2)
+	plt.figure()
+	a.plt.subplot(2,1,1)
+	plt.imshow(np.abs(slice1[:,:,1]), cmap='gray')
+	a.set_title("t")
+	a.plt.subplot(2,1,2)
+	plt.imshow(np.abs(slice2[:,:,1]), cmap='gray')
+	a.set_title("t+1")
 	plt.show()
 
 '''
@@ -61,7 +75,8 @@ Creates samples.h5, 46.74 GB file containing data split into groups
 Test reading from hdf5 file, samples.h5
 '''
 f = h5.File('samples.h5', 'r')
-print(f["train_curr"][0].shape)
+print(f["train_curr"].shape)
+plot_time_step(f["train_curr"][510], f["train_next"][510])
 print(f["train_next"].shape)
 print(f["val_curr"].shape)
 print(f["val_next"].shape)
