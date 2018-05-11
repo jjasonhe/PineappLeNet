@@ -67,9 +67,9 @@ Creates shapes.txt (if it doesn't exist); returns maxX, maxY, maxT for zero padd
 i.<dict>_h5(<dict>, maxX, maxY, maxT)
 Each call creates 2 h5 files, current and next
 '''
-# num_train, num_val, num_test = 70, 10, 20
+num_train, num_val, num_test = 70, 10, 20
 
-# train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
+train_data,val_data,test_data = i.create_dicts(num_train, num_val, num_test)
 # maxX,maxY,maxT = i.init() # call once
 # i.create_h5(train_data, val_data, test_data, maxX, maxY, maxT) # call once
 # i.val_h5(val_data, maxX, maxY, maxT)
@@ -79,6 +79,11 @@ Each call creates 2 h5 files, current and next
 '''
 Test reading from hdf5 file, samples.h5
 '''
+fc = h5.File('train_curr.h5', 'r')
+fn = h5.File('train_next.h5', 'r')
+print(fc[train_data[0]].shape)
+print(fn[train_data[0]].shape)
+plot_time_step(fc[train_data[0]][510], fn[train_data[0]][510])
 # f = h5.File('samples.h5', 'r')
 # print(f["train_curr"].shape)
 # plot_time_step(f["train_curr"][510], f["train_next"][510])
