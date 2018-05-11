@@ -76,12 +76,12 @@ i.create_h5(num_train, num_val, num_test, train_data, val_data, test_data, maxX,
 '''
 Test reading from hdf5 file, samples.h5
 '''
-f = h5.File('samples.h5', 'r')
+# f = h5.File('samples.h5', 'r')
 # print(f["train_curr"].shape)
-plot_time_step(f["train_curr"][510], f["train_next"][510])
+# plot_time_step(f["train_curr"][510], f["train_next"][510])
 # print(f["train_next"].shape)
 # print(f["val_curr"].shape)
 # print(f["val_next"].shape)
 # print(f["test_curr"].shape)
 # print(f["test_next"].shape)
-f.close()
+# f.close()
