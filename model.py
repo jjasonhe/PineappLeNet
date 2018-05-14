@@ -14,6 +14,7 @@ def construct_model(curr,
 	'''
 	Args:
 		curr: tensor of ground truth "current time" images
+              in my case, h5file[dictionary[i]], which is of shape (Z*T, Y, X)
 		iter_num: tensor of the current training interation
 		k: constant used for scheduled sampling, -1 to feed in own prediction
 		num_masks: the number of different pixel motion predictions
@@ -32,4 +33,9 @@ def construct_model(curr,
 	'''
 	if stp+cdna+dna != 1:
 		raise ValueError('More than one, or no network option specified.')
-	N, H, W= curr[]
+	N, H, W= curr.shape
+    
+    lstm_size = np.int32(np.array([32, 32, 64, 64, 128, 64, 32]))
+    
+    for img in curr:
+        
