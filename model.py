@@ -1,8 +1,6 @@
 import numpy as np
 import tensorflow as tf
 
-
-
 def construct_model(curr,
 					iter_num=-1.0,
 					k=-1,
@@ -39,3 +37,6 @@ def construct_model(curr,
     
     for img in curr:
         
+
+
+def construct_model()

@@ -151,7 +151,7 @@ def fetch(f, maxX, maxY, maxT):
 	img = img[:,:,::-1,::-1]
 	return img
 
-
+'''
 def train_h5(train_dict, maxX, maxY, maxT):
 	fc = h5.File('datasets/train_curr.h5', 'w')
 	fn = h5.File('datasets/train_next.h5', 'w')
@@ -171,8 +171,21 @@ def train_h5(train_dict, maxX, maxY, maxT):
 	fc.close()
 	fn.close()
 	return
+'''
+def train_h5(train_dict, maxX, maxY, maxT):
+	f = h5.File('datasets/train.h5', 'w')
+	i = 0
+	for patient in train_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		Z,T,Y,X = img.shape
+		img = img[:,:,:,:,np.newaxis]
+		f.create_dataset("%s" % patient, data=img)
+		print("trained patient %d" % i)
+		i = i + 1
+	f.close()
+	return
 
-
+'''
 def val_h5(val_dict, maxX, maxY, maxT):
 	fc = h5.File('datasets/val_curr.h5', 'w')
 	fn = h5.File('datasets/val_next.h5', 'w')
@@ -192,8 +205,21 @@ def val_h5(val_dict, maxX, maxY, maxT):
 	fc.close()
 	fn.close()
 	return
+'''
+def val_h5(train_dict, maxX, maxY, maxT):
+	f = h5.File('datasets/val.h5', 'w')
+	i = 0
+	for patient in val_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		Z,T,Y,X = img.shape
+		img = img[:,:,:,:,np.newaxis]
+		f.create_dataset("%s" % patient, data=img)
+		print("validated patient %d" % i)
+		i = i + 1
+	f.close()
+	return
 
-
+'''
 def test_h5(test_dict, maxX, maxY, maxT):
 	fc = h5.File('datasets/test_curr.h5', 'w')
 	fn = h5.File('datasets/test_next.h5', 'w')
@@ -212,4 +238,17 @@ def test_h5(test_dict, maxX, maxY, maxT):
 		i = i + 1
 	fc.close()
 	fn.close()
+	return
+'''
+def test_h5(train_dict, maxX, maxY, maxT):
+	f = h5.File('datasets/test.h5', 'w')
+	i = 0
+	for patient in test_dict:
+		img = fetch(patient, maxX, maxY, maxT)
+		Z,T,Y,X = img.shape
+		img = img[:,:,:,:,np.newaxis]
+		f.create_dataset("%s" % patient, data=img)
+		print("tested patient %d" % i)
+		i = i + 1
+	f.close()
 	return
