@@ -206,7 +206,7 @@ def val_h5(val_dict, maxX, maxY, maxT):
 	fn.close()
 	return
 '''
-def val_h5(train_dict, maxX, maxY, maxT):
+def val_h5(val_dict, maxX, maxY, maxT):
 	f = h5.File('datasets/val.h5', 'w')
 	i = 0
 	for patient in val_dict:
@@ -240,7 +240,7 @@ def test_h5(test_dict, maxX, maxY, maxT):
 	fn.close()
 	return
 '''
-def test_h5(train_dict, maxX, maxY, maxT):
+def test_h5(test_dict, maxX, maxY, maxT):
 	f = h5.File('datasets/test.h5', 'w')
 	i = 0
 	for patient in test_dict:
