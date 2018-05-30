@@ -3,6 +3,8 @@ import ast
 import numpy as np
 import cfl
 import h5py as h5
+import tensorflow as tf
+import random
 from operator import itemgetter
 
 folders = [
@@ -151,27 +153,133 @@ def fetch(f, maxX, maxY, maxT):
 	img = img[:,:,::-1,::-1]
 	return img
 
-'''
-def train_h5(train_dict, maxX, maxY, maxT):
-	fc = h5.File('datasets/train_curr.h5', 'w')
-	fn = h5.File('datasets/train_next.h5', 'w')
-	i = 0
-	for patient in train_dict:
-		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		fc.create_dataset("%s" % patient, data=img_curr)
-		fn.create_dataset("%s" % patient, data=img_next)
-		print("trained patient %d" % i)
-		i = i + 1
-	fc.close()
-	fn.close()
-	return
-'''
+def _int64_feature(value):
+    return tf.train.Feature(int64_list=tf.train.Int64List(value=[value]))
+
+def _bytes_feature(value):
+    return tf.train.Feature(bytes_list=tf.train.BytesList(value=[value]))
+
+def _floats_feature(value):
+    return tf.train.Feature(bytes_list=tf.train.FloatList(value=[value]))
+
+def what_tf_fcn8(mode, patients):
+    if os.path.exists('datasets/{}_fcn8.tfrecords'.format(mode)):
+        return
+    
+    path_h5 = 'datasets/{}.h5'.format(mode)
+    f = h5.File(path_h5, 'r')
+    path_tf = 'datasets/{}_fcn8.tfrecords'.format(mode)
+    writer = tf.python_io.TFRecordWriter(path_tf)
+    for i,p in enumerate(patients):
+        imgs = f[p]
+        imgs = np.absolute(imgs).astype(np.float32)
+        max_imgs = np.amax(imgs, axis=(1,2,3))
+        imgs = imgs/max_imgs[:,np.newaxis,np.newaxis,np.newaxis,:]
+        for z in range(f[p].shape[0]):
+            for t in range(f[p].shape[1]-1):
+                img_curr = imgs[z,t,:,:,:]
+                img_next = imgs[z,t+1,:,:,:]
+                example = tf.train.Example(features=tf.train.Features(feature={
+                    'img_curr': _bytes_feature(img_curr.tostring()),
+                    'img_next': _bytes_feature(img_next.tostring())
+                }))
+                writer.write(example.SerializeToString())
+#                 if t>15:
+#                     print('time {}'.format(t))
+            if z>75:
+                print('slice {}'.format(z))
+        print('patient {}'.format(i))
+    writer.close()
+    return
+
+def what_tf(mode, patients):
+    if os.path.exists('datasets/{}.tfrecords'.format(mode)):
+        return
+        
+    path_h5 = 'datasets/{}.h5'.format(mode)
+    f = h5.File(path_h5, 'r')
+    path_tf = 'datasets/{}.tfrecords'.format(mode)
+    writer = tf.python_io.TFRecordWriter(path_tf)
+    for i,p in enumerate(patients):
+        imgs = f[p]
+        imgs = np.absolute(imgs).astype(np.float32)
+        max_imgs = np.amax(imgs, axis=(1,2,3))
+        imgs = imgs/max_imgs[:,np.newaxis,np.newaxis,np.newaxis,:]
+        for z in range(f[p].shape[0]):
+#             path_tf = 'datasets/{}/{}_{:03}.tfrecords'.format(mode, p, z)
+#             img = f[p][z,:,:,:,:]
+            img = imgs[z,:,:,:,:]
+#             img = np.absolute(img).astype(np.float32)
+#             img_curr = img[:-1,:,:,:]
+#             img_next = img[1:,:,:,:]
+            T,H,W,C = img.shape
+            example = tf.train.Example(features=tf.train.Features(feature={
+                'img': _bytes_feature(img.tostring()),
+                'T_dim': _int64_feature(T),
+                'H_dim': _int64_feature(H),
+                'W_dim': _int64_feature(W),
+                'C_dim': _int64_feature(C)
+            }))
+            writer.write(example.SerializeToString())
+        print('patient {}'.format(i))
+    writer.close()
+    return
+
+def create_dataset_fcn8(mode, patients):
+    filenames = 'datasets/{}_fcn8.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={'img_curr': tf.FixedLenFeature([], tf.string),
+                      'img_next': tf.FixedLenFeature([], tf.string)}
+        )
+        curr_record_bytes = tf.decode_raw(features['img_curr'], tf.float32)
+        next_record_bytes = tf.decode_raw(features['img_next'], tf.float32)
+        features = tf.reshape(curr_record_bytes, [224, 192, 1])
+        features = tf.transpose(features, [1, 0, 2])
+        labels = tf.reshape(next_record_bytes, [224, 192, 1])
+        labels = tf.transpose(labels, [1, 0, 2])
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
+        
+
+def create_dataset(mode, patients):
+#    filenames = os.listdir('datasets/{}'.format(mode))
+#     filenames = "datasets/train/01Apr16_Ex18785_Ser6_000.tfrecords"
+    filenames = 'datasets/{}.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={
+                'img': tf.FixedLenFeature([], tf.string),
+#                 'img_curr': tf.FixedLenFeature([], tf.string),
+#                 'img_next': tf.FixedLenFeature([], tf.string),
+                'T_dim': tf.FixedLenFeature([], tf.int64),
+                'H_dim': tf.FixedLenFeature([], tf.int64),
+                'W_dim': tf.FixedLenFeature([], tf.int64),
+                'C_dim': tf.FixedLenFeature([], tf.int64)
+            }
+        )
+        T_dim = tf.cast(features['T_dim'], dtype=tf.int32)
+        H_dim = tf.cast(features['H_dim'], dtype=tf.int32)
+        W_dim = tf.cast(features['W_dim'], dtype=tf.int32)
+        C_dim = tf.cast(features['C_dim'], dtype=tf.int32)
+        img_record_bytes = tf.decode_raw(features['img'], tf.float32)
+        #img = tf.reshape(img_record_bytes, [T_dim, H_dim, W_dim, C_dim])
+#         curr_record_bytes = tf.decode_raw(features['img_curr'], tf.float32)
+#         next_record_bytes = tf.decode_raw(features['img_next'], tf.float32)
+#         img_curr = tf.reshape(curr_record_bytes, [T_dim, H_dim, W_dim, C_dim])
+#         img_next = tf.reshape(next_record_bytes, [T_dim, H_dim, W_dim, C_dim])
+        img = tf.reshape(img_record_bytes, [18, 224, 192, 1])
+        features = img[:-1,:,:,:]
+        labels = img[1:,:,:,:]
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
+
 def train_h5(train_dict, maxX, maxY, maxT):
 	f = h5.File('datasets/train.h5', 'w')
 	i = 0
@@ -184,28 +292,7 @@ def train_h5(train_dict, maxX, maxY, maxT):
 		i = i + 1
 	f.close()
 	return
-
-'''
-def val_h5(val_dict, maxX, maxY, maxT):
-	fc = h5.File('datasets/val_curr.h5', 'w')
-	fn = h5.File('datasets/val_next.h5', 'w')
-	i = 0
-	for patient in val_dict:
-		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		fc.create_dataset("%s" % patient, data=img_curr)
-		fn.create_dataset("%s" % patient, data=img_next)
-		print("validated patient %d" % i)
-		i = i + 1
-	fc.close()
-	fn.close()
-	return
-'''
+        
 def val_h5(val_dict, maxX, maxY, maxT):
 	f = h5.File('datasets/val.h5', 'w')
 	i = 0
@@ -219,27 +306,6 @@ def val_h5(val_dict, maxX, maxY, maxT):
 	f.close()
 	return
 
-'''
-def test_h5(test_dict, maxX, maxY, maxT):
-	fc = h5.File('datasets/test_curr.h5', 'w')
-	fn = h5.File('datasets/test_next.h5', 'w')
-	i = 0
-	for patient in test_dict:
-		img = fetch(patient, maxX, maxY, maxT)
-		img_curr = img[:,:-1,:,:]
-		img_next = img[:,1:, :,:]
-		Z,T,Y,X = img_curr.shape
-		img_curr = img_curr.reshape(Z*T,Y,X)
-		Z,T,Y,X = img_next.shape
-		img_next = img_next.reshape(Z*T,Y,X)
-		fc.create_dataset("%s" % patient, data=img_curr)
-		fn.create_dataset("%s" % patient, data=img_next)
-		print("tested patient %d" % i)
-		i = i + 1
-	fc.close()
-	fn.close()
-	return
-'''
 def test_h5(test_dict, maxX, maxY, maxT):
 	f = h5.File('datasets/test.h5', 'w')
 	i = 0
