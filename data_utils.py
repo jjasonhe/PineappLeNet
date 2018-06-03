@@ -164,7 +164,10 @@ def _floats_feature(value):
 
 def what_tf_fcn8(mode, patients):
     if os.path.exists('datasets/{}_fcn8.tfrecords'.format(mode)):
+        print('{}_fcn8.tfrecords already exists'.format(mode))
         return
+    
+    num_ex = 0
     
     path_h5 = 'datasets/{}.h5'.format(mode)
     f = h5.File(path_h5, 'r')
@@ -184,16 +187,19 @@ def what_tf_fcn8(mode, patients):
                     'img_next': _bytes_feature(img_next.tostring())
                 }))
                 writer.write(example.SerializeToString())
+                num_ex += 1
+                print('example {}'.format(num_ex))
 #                 if t>15:
 #                     print('time {}'.format(t))
-            if z>75:
-                print('slice {}'.format(z))
+#             if z>75:
+#                 print('slice {}'.format(z))
         print('patient {}'.format(i))
     writer.close()
     return
 
 def what_tf(mode, patients):
     if os.path.exists('datasets/{}.tfrecords'.format(mode)):
+        print('{}.tfrecords already exists'.format(mode))
         return
         
     path_h5 = 'datasets/{}.h5'.format(mode)
@@ -237,10 +243,10 @@ def create_dataset_fcn8(mode, patients):
         curr_record_bytes = tf.decode_raw(features['img_curr'], tf.float32)
         next_record_bytes = tf.decode_raw(features['img_next'], tf.float32)
         features = tf.reshape(curr_record_bytes, [224, 192, 1])
-        features = tf.squeeze(features) # (224, 192)
-        features = tf.stack([features, features, features]) # (3, 224, 192)
-        features = tf.transpose(features, [2, 1, 0]) # (192, 224, 3)
-#         features = tf.transpose(features, [1, 0, 2])
+#         features = tf.squeeze(features) # (224, 192)
+#         features = tf.stack([features, features, features]) # (3, 224, 192)
+#         features = tf.transpose(features, [2, 1, 0]) # (192, 224, 3)
+        features = tf.transpose(features, [1, 0, 2])
         labels = tf.reshape(next_record_bytes, [224, 192, 1])
 #         labels = tf.squeeze(labels) # (224, 192)
 #         labels = tf.stack([labels, labels, labels]) # (3, 224, 192)
@@ -249,7 +255,26 @@ def create_dataset_fcn8(mode, patients):
         return features, labels
     dataset = dataset.map(_prep_tfrecord)
     return dataset
-        
+
+def create_dataset_diff(mode, patients):
+    filenames = 'datasets/{}_fcn8.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={'img_curr': tf.FixedLenFeature([], tf.string),
+                      'img_next': tf.FixedLenFeature([], tf.string)}
+        )
+        curr_record_bytes = tf.decode_raw(features['img_curr'], tf.float32)
+        next_record_bytes = tf.decode_raw(features['img_next'], tf.float32)
+        features = tf.reshape(curr_record_bytes, [224, 192, 1])
+        features = tf.transpose(features, [1, 0, 2])
+        next_img = tf.reshape(next_record_bytes, [224, 192, 1])
+        next_img = tf.transpose(next_img, [1, 0, 2])
+        labels = next_img - features
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
 
 def create_dataset(mode, patients):
 #    filenames = os.listdir('datasets/{}'.format(mode))
