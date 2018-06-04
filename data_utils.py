@@ -277,8 +277,6 @@ def create_dataset_diff(mode, patients):
     return dataset
 
 def create_dataset(mode, patients):
-#    filenames = os.listdir('datasets/{}'.format(mode))
-#     filenames = "datasets/train/01Apr16_Ex18785_Ser6_000.tfrecords"
     filenames = 'datasets/{}.tfrecords'.format(mode)
     dataset = tf.data.TFRecordDataset(filenames)
     def _prep_tfrecord(example):
@@ -287,24 +285,16 @@ def create_dataset(mode, patients):
             features={
                 'img': tf.FixedLenFeature([], tf.string),
 #                 'img_curr': tf.FixedLenFeature([], tf.string),
-#                 'img_next': tf.FixedLenFeature([], tf.string),
-                'T_dim': tf.FixedLenFeature([], tf.int64),
-                'H_dim': tf.FixedLenFeature([], tf.int64),
-                'W_dim': tf.FixedLenFeature([], tf.int64),
-                'C_dim': tf.FixedLenFeature([], tf.int64)
+#                 'img_next': tf.FixedLenFeature([], tf.string)
             }
         )
-        T_dim = tf.cast(features['T_dim'], dtype=tf.int32)
-        H_dim = tf.cast(features['H_dim'], dtype=tf.int32)
-        W_dim = tf.cast(features['W_dim'], dtype=tf.int32)
-        C_dim = tf.cast(features['C_dim'], dtype=tf.int32)
         img_record_bytes = tf.decode_raw(features['img'], tf.float32)
-        #img = tf.reshape(img_record_bytes, [T_dim, H_dim, W_dim, C_dim])
 #         curr_record_bytes = tf.decode_raw(features['img_curr'], tf.float32)
 #         next_record_bytes = tf.decode_raw(features['img_next'], tf.float32)
 #         img_curr = tf.reshape(curr_record_bytes, [T_dim, H_dim, W_dim, C_dim])
 #         img_next = tf.reshape(next_record_bytes, [T_dim, H_dim, W_dim, C_dim])
         img = tf.reshape(img_record_bytes, [18, 224, 192, 1])
+        img = tf.transpose(img, [0, 2, 1, 3])
         features = img[:-1,:,:,:]
         labels = img[1:,:,:,:]
         return features, labels
