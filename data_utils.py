@@ -563,3 +563,126 @@ def create_dataset_two(mode, patients):
     return dataset
 
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
+
+# ROCKETS IN 7 LET'S GO
+
+def what_tf_g7(mode, patients):
+    if os.path.exists('datasets/{}_g7.tfrecords'.format(mode)):
+        print('{}_g7.tfrecords already exists'.format(mode))
+        return
+    num_ex = 0
+    path_h5 = 'datasets/{}.h5'.format(mode)
+    f = h5.File(path_h5, 'r')
+    path_tf = 'datasets/{}_g7.tfrecords'.format(mode)
+    writer = tf.python_io.TFRecordWriter(path_tf)
+    for i,p in enumerate(patients):
+        imgs = f[p]
+        imgs = np.transpose(imgs, (0,1,3,2,4))
+        imgs = np.absolute(imgs).astype(np.float32)
+        avg_diffs = np.zeros((imgs.shape[0]))
+        for z in range(imgs.shape[0]):
+            timeseries = imgs[z,:,:,:,:]
+            diffs = np.zeros((timeseries.shape[0]-1, timeseries.shape[1], timeseries.shape[2], timeseries.shape[3]))
+            for t in range(timeseries.shape[0]-1):
+                diffs[t,:,:,:] = np.absolute(timeseries[t+1,:,:,:] - timeseries[t,:,:,:])
+            avg_diffs[z] = np.mean(diffs)
+        z_pruned = np.argsort(-avg_diffs) # sort in descending order
+        max_imgs = np.amax(imgs, axis=(1,2,3))
+        imgs = imgs/max_imgs[:,np.newaxis,np.newaxis,np.newaxis,:]
+        for z in z_pruned[:20]:
+            img = imgs[z,:,:,:,:]
+            example = tf.train.Example(features=tf.train.Features(feature={
+                'img': _bytes_feature(img.tostring())
+            }))
+            writer.write(example.SerializeToString())
+            num_ex += 1
+        print('patient {}'.format(i))
+        print('example {}'.format(num_ex))
+    writer.close()
+    return
+
+def what_tf_g7_adaproon(mode, patients):
+    if os.path.exists('datasets/{}_g7_ada.tfrecords'.format(mode)):
+        print('{}_g7_ada.tfrecords already exists'.format(mode))
+        return
+    num_ex = 0
+    path_h5 = 'datasets/{}.h5'.format(mode)
+    f = h5.File(path_h5, 'r')
+    path_tf = 'datasets/{}_g7_ada.tfrecords'.format(mode)
+    writer = tf.python_io.TFRecordWriter(path_tf)
+    for i,p in enumerate(patients):
+        imgs = f[p]
+        imgs = np.transpose(imgs, (0,1,3,2,4))
+        imgs = np.absolute(imgs).astype(np.float32)
+        avg_diffs = np.zeros((imgs.shape[0]))
+        for z in range(imgs.shape[0]):
+            timeseries = imgs[z,:,:,:,:]
+            diffs = np.zeros((timeseries.shape[0]-1, timeseries.shape[1], timeseries.shape[2], timeseries.shape[3]))
+            for t in range(timeseries.shape[0]-1):
+                diffs[t,:,:,:] = np.absolute(timeseries[t+1,:,:,:] - timeseries[t,:,:,:])
+            avg_diffs[z] = np.mean(diffs)
+        z_pruned = np.argsort(-avg_diffs) # sort in descending order
+        max_imgs = np.amax(imgs, axis=(1,2,3))
+        imgs = imgs/max_imgs[:,np.newaxis,np.newaxis,np.newaxis,:]
+        thresh = int(round(0.25*imgs.shape[0]))
+        for z in z_pruned[:thresh]:
+            img = imgs[z,:,:,:,:]
+            example = tf.train.Example(features=tf.train.Features(feature={
+                'img': _bytes_feature(img.tostring())
+            }))
+            writer.write(example.SerializeToString())
+            num_ex += 1
+        print('patient {}'.format(i))
+        print('example {}'.format(num_ex))
+    writer.close()
+    return
+
+def create_dataset_g7(mode, patients):
+    filenames = 'datasets/{}_g7.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={'img': tf.FixedLenFeature([], tf.string)}
+        )
+        img_record_bytes = tf.decode_raw(features['img'], tf.float32)
+        img = tf.reshape(img_record_bytes, [18, 192, 224, 1])
+        features = img[:3,:,:,:]
+        labels = img[3:,:,:,:]
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
+
+def create_dataset_g7_n(mode, patients, n):
+    filenames = 'datasets/{}_g7.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={'img': tf.FixedLenFeature([], tf.string)}
+        )
+        img_record_bytes = tf.decode_raw(features['img'], tf.float32)
+        img = tf.reshape(img_record_bytes, [18, 192, 224, 1])
+        features = img[:n,:,:,:]
+        labels = img[n:,:,:,:]
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
+
+def create_dataset_g7_adaproon(mode, patients, n):
+    filenames = 'datasets/{}_g7_ada.tfrecords'.format(mode)
+    dataset = tf.data.TFRecordDataset(filenames)
+    def _prep_tfrecord(example):
+        features = tf.parse_single_example(
+            example,
+            features={'img': tf.FixedLenFeature([], tf.string)}
+        )
+        img_record_bytes = tf.decode_raw(features['img'], tf.float32)
+        img = tf.reshape(img_record_bytes, [18, 192, 224, 1])
+        features = img[:n,:,:,:]
+        labels = img[n:,:,:,:]
+        return features, labels
+    dataset = dataset.map(_prep_tfrecord)
+    return dataset
+
+# # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
