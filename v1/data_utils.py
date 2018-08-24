@@ -3,7 +3,7 @@ import ast
 import numpy as np
 import cfl
 import h5py as h5
-import tensorflow as tf
+# import tensorflow as tf
 import random
 from operator import itemgetter
 
@@ -115,7 +115,7 @@ def init():
 		txt = open("shapes.txt", "w")
 		i = 0
 		for f in folders:
-			img = cfl.read('datasets/%s/im_dce' % f)
+			img = cfl.read('../datasets/%s/im_dce' % f)
 			img = np.squeeze(img)
 			txt.write("%s," % (img.shape,))
 			print(i)
